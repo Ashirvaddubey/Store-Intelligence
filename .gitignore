@@ -24,7 +24,7 @@ htmlcov/
 coverage.xml
 
 # Docker
-*.dockerignore
+.env.override
 
 # IDE
 .vscode/

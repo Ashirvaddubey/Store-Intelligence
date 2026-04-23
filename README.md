@@ -20,12 +20,15 @@
 ## Quick Start (5 Commands)
 
 ```powershell
-git clone <repo-url> store-intelligence
+git clone https://github.com/Ashirvaddubey/Store-Intelligence store-intelligence
 cd store-intelligence
 Copy-Item .env.example .env
 docker compose up -d --build
 Start-Process http://localhost:3000
 ```
+
+> **Note (Windows):** If Docker Desktop fails to pull images on first run, add  
+> `"dns":["8.8.8.8","1.1.1.1"]` to `%APPDATA%\Docker\daemon.json` and restart Docker Desktop.
 
 > **Live Dashboard**: http://localhost:3000  
 > **Demo Dashboard** (no backend needed): open `dashboard/public/demo.html` in any browser  
@@ -144,18 +147,35 @@ data/
 
 ## Services (docker compose)
 
-| Service | Port | Description |
-|---------|------|-------------|
-| `api` | 8000 | FastAPI application |
-| `postgres` | 5432 | Primary event store |
-| `redis` | 6379 | Real-time metrics cache |
-| `dashboard` | 3000 | Live web dashboard |
+| Service | Port | Health Check | Description |
+|---------|------|-------------|-------------|
+| `api` | 8000 | `GET /health` | FastAPI application |
+| `postgres` | 5432 | `pg_isready` | Primary event store |
+| `redis` | 6379 | `redis-cli ping` | Real-time metrics cache |
+| `dashboard` | 3000 | `GET /health` | Live web dashboard |
+
+```powershell
+# Check all containers are healthy
+docker compose ps
+
+# Stream live API logs
+docker compose logs -f api
+
+# Run tests inside the API container
+docker compose exec api pytest tests/ -v --cov=app --cov-report=html
+
+# Rebuild a single service after code changes
+docker compose up -d --build api
+
+# Tear down and wipe volumes (fresh start)
+docker compose down -v
+```
 
 ---
 
 ## Test Suite
 
-```bash
+```powershell
 # Run all tests with coverage report
 docker compose exec api pytest tests/ -v --cov=app --cov-report=html
 
@@ -164,9 +184,11 @@ docker compose exec api pytest tests/test_pipeline.py -v
 docker compose exec api pytest tests/test_metrics.py -v
 docker compose exec api pytest tests/test_anomalies.py -v
 
-# Coverage report
-open htmlcov/index.html
+# View HTML coverage report
+Start-Process htmlcov/index.html
 ```
+
+Current gate: **≥ 70% coverage** (passing at **73.13%**, 100 tests).
 
 ---
 

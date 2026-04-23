@@ -1,0 +1,65 @@
+# ── .dockerignore ────────────────────────────────────────────────────────────
+# Keeps the build context lean — only what Docker actually needs is sent.
+# ─────────────────────────────────────────────────────────────────────────────
+
+# Git
+.git/
+.gitignore
+
+# Python cache / virtualenvs
+__pycache__/
+*.py[cod]
+*.pyo
+*.pyd
+.Python
+*.egg
+*.egg-info/
+dist/
+build/
+.eggs/
+.venv/
+venv/
+env/
+
+# Test & coverage artefacts
+.pytest_cache/
+htmlcov/
+.coverage
+coverage.xml
+
+# Compiled model weights (large binary files — mount at runtime if needed)
+*.pt
+*.onnx
+*.tflite
+yolov8*.pt
+
+# Databases
+dev.db
+*.db
+
+# Logs
+*.log
+logs/
+
+# Local env / secrets
+.env
+.env.*
+!.env.example
+
+# OS noise
+.DS_Store
+Thumbs.db
+*.swp
+*.swo
+
+# IDE
+.vscode/
+.idea/
+
+# Docs (not needed at runtime)
+docs/
+*.md
+
+# Data clips (large; mounted as volume at runtime)
+data/clips/
+data/events/
