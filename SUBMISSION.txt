@@ -17,7 +17,7 @@ GITHUB REPOSITORY (PRIMARY SUBMISSION LINK)
   https://github.com/Ashirvaddubey/Store-Intelligence
 
   Branch : main
-  Commit : b9db1a1  (Fix: SQLite compat, Redis optional graceful fallback)
+  Commit : c1fa4e5  (docker: production-ready compose + Dockerfiles)
 
 ================================================================================
 ALL WORKING API ENDPOINTS  (Server: http://localhost:8000)
