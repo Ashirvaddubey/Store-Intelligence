@@ -1,0 +1,168 @@
+================================================================================
+         APEX RETAIL — STORE INTELLIGENCE CCTV TRACKING SYSTEM
+                        SUBMISSION FILE
+================================================================================
+
+CANDIDATE DETAILS
+-----------------
+Name        : Ashirvad Dubey
+Roll Number : [YOUR ROLL NUMBER HERE]
+Email       : [YOUR EMAIL HERE]
+Date        : April 24, 2026
+
+================================================================================
+GITHUB REPOSITORY (PRIMARY SUBMISSION LINK)
+================================================================================
+
+  https://github.com/Ashirvaddubey/Store-Intelligence
+
+  Branch : main
+  Commit : b9db1a1  (Fix: SQLite compat, Redis optional graceful fallback)
+
+================================================================================
+ALL WORKING API ENDPOINTS  (Server: http://localhost:8000)
+================================================================================
+
+  #   METHOD    ENDPOINT                               DESCRIPTION
+  --- --------- -------------------------------------- -------------------------
+  1   GET       http://localhost:8000/                 Landing page (all links)
+  2   POST      http://localhost:8000/events/ingest    Batch event ingestion
+  3   GET       http://localhost:8000/stores/{id}/metrics  Real-time KPIs
+  4   GET       http://localhost:8000/stores/{id}/funnel   Conversion funnel
+  5   GET       http://localhost:8000/stores/{id}/heatmap  Zone heatmap
+  6   GET       http://localhost:8000/stores/{id}/anomalies Active anomalies
+  7   GET       http://localhost:8000/health           Service health check
+  8   WS        ws://localhost:8000/ws/{store_id}      Live WebSocket feed
+
+  Sample store ID: STORE_BLR_002
+
+================================================================================
+DOCUMENTATION LINKS
+================================================================================
+
+  Swagger UI (Interactive API Docs)
+    http://localhost:8000/docs
+
+  ReDoc (Read-only API Docs)
+    http://localhost:8000/redoc
+
+  OpenAPI JSON Schema
+    http://localhost:8000/openapi.json
+
+  Full API Reference (Markdown)
+    https://github.com/Ashirvaddubey/Store-Intelligence/blob/main/docs/API.md
+
+  Architecture Design Doc
+    https://github.com/Ashirvaddubey/Store-Intelligence/blob/main/docs/DESIGN.md
+
+  Key Technical Choices Doc
+    https://github.com/Ashirvaddubey/Store-Intelligence/blob/main/docs/CHOICES.md
+
+================================================================================
+DASHBOARD LINKS
+================================================================================
+
+  Live Dashboard (requires Docker)
+    http://localhost:3000
+
+  Demo Dashboard (NO backend needed — open directly in browser)
+    File: dashboard/public/demo.html
+    GitHub: https://github.com/Ashirvaddubey/Store-Intelligence/blob/main/dashboard/public/demo.html
+
+================================================================================
+HOW TO RUN (WITHOUT DOCKER)
+================================================================================
+
+  Step 1 — Clone the repo
+    git clone https://github.com/Ashirvaddubey/Store-Intelligence.git
+    cd Store-Intelligence
+
+  Step 2 — Create virtual environment & install dependencies
+    python -m venv .venv
+    .venv\Scripts\activate
+    pip install -r app/requirements.txt
+
+  Step 3 — Start the API server
+    $env:DATABASE_URL = "sqlite+aiosqlite:///./dev.db"
+    uvicorn app.main:app --host 0.0.0.0 --port 8000
+
+  Step 4 — Open API docs in browser
+    http://localhost:8000/docs
+
+HOW TO RUN (WITH DOCKER — Full stack)
+--------------------------------------
+  cp .env.example .env
+  docker compose up -d --build
+  # API  → http://localhost:8000/docs
+  # Dash → http://localhost:3000
+
+================================================================================
+TEST SUITE
+================================================================================
+
+  Run all tests:
+    pytest --cov=app --cov-fail-under=70 -v
+
+  Results (confirmed):
+    Tests  : 100 passed
+    Coverage: 73.13%
+    Gate   : 70% minimum (PASS)
+
+================================================================================
+TECH STACK
+================================================================================
+
+  API Framework  : FastAPI (Python 3.11)
+  Detection      : YOLOv8-m + ByteTrack + cosine-similarity Re-ID
+  Database       : PostgreSQL (production) / SQLite (local dev)
+  Cache / PubSub : Redis 7
+  Dashboard      : Node.js + Express + WebSocket proxy
+  Logging        : structlog (structured JSON with trace_id, event_count)
+  Tests          : pytest-asyncio + httpx + aiosqlite
+  Containers     : Docker Compose (api, postgres, redis, dashboard)
+
+================================================================================
+PROJECT STRUCTURE
+================================================================================
+
+  app/
+    main.py              FastAPI entrypoint, middleware, lifespan
+    routers/
+      events.py          POST /events/ingest
+      stores.py          GET  /stores/{id}/metrics|funnel|heatmap|anomalies
+      health.py          GET  /health
+      ws.py              WS   /ws/{store_id}
+    db.py                SQLAlchemy async engine (Postgres + SQLite)
+    cache.py             Redis cache layer (graceful fallback if no Redis)
+    metrics.py           KPI computation
+    funnel.py            Conversion funnel
+    heatmap.py           Zone heatmap
+    anomalies.py         Anomaly detectors
+    ingestion.py         Dedup + partial-success ingest logic
+    pos_correlation.py   POS transaction CSV loader + join
+
+  pipeline/
+    detect.py            YOLOv8 + ByteTrack frame processor
+    emit.py              Event emitter
+    replay.py            Historical event replay tool
+    load_pos.py          POS CSV loader CLI
+
+  dashboard/
+    server.js            Express + WS proxy server
+    public/index.html    Live dashboard (connects to real API)
+    public/demo.html     Standalone demo (no backend required)
+
+  docs/
+    API.md               Complete API reference
+    DESIGN.md            Architecture and system design
+    CHOICES.md           Key technical decision rationale
+
+  tests/
+    test_events.py       Ingest endpoint tests
+    test_stores.py       Store analytics endpoint tests
+    test_health.py       Health endpoint tests
+    test_runtime.py      Middleware, WebSocket, replay, detect tests
+
+================================================================================
+END OF SUBMISSION
+================================================================================
