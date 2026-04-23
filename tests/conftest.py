@@ -152,9 +152,10 @@ def override_db(db_session):
 
 @pytest.fixture(autouse=True)
 def mock_db_health():
-    with patch("app.db.check_db_health", return_value=True), \
-         patch("app.db.init_db",         return_value=None), \
-         patch("app.db.close_db",        return_value=None):
+    with patch("app.db.check_db_health",     return_value=True), \
+         patch("app.health.check_db_health", return_value=True), \
+         patch("app.db.init_db",             return_value=None), \
+         patch("app.db.close_db",            return_value=None):
         yield
 
 

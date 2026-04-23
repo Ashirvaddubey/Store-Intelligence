@@ -33,6 +33,7 @@ async def ingest(
     trace_id = getattr(request.state, "trace_id", "")
 
     raw_events = body.get("events", [])
+    request.state.event_count = len(raw_events) if isinstance(raw_events, list) else 0
     if not isinstance(raw_events, list) or len(raw_events) == 0:
         raise HTTPException(status_code=status.HTTP_422_UNPROCESSABLE_ENTITY,
                             detail="events must be a non-empty list")

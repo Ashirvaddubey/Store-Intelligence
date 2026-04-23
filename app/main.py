@@ -26,6 +26,21 @@ async def lifespan(app: FastAPI):
     """Startup / shutdown lifecycle."""
     await init_db()
     await init_cache()
+
+    # Auto-load POS transactions if CSV is available
+    pos_csv = os.getenv("POS_CSV_PATH", "data/pos_transactions.csv")
+    try:
+        from app.pos_correlation import load_pos_transactions
+        from app.db import AsyncSessionLocal
+        import pathlib
+        if pathlib.Path(pos_csv).exists():
+            async with AsyncSessionLocal() as db:
+                n = await load_pos_transactions(pos_csv, db)
+                await db.commit()
+            log.info("pos_transactions_autoloaded", count=n, path=pos_csv)
+    except Exception as exc:
+        log.warning("pos_autoload_skipped", reason=str(exc))
+
     log.info("store_intelligence_api_started")
     yield
     await close_db()
@@ -56,6 +71,7 @@ async def structured_logging_middleware(request: Request, call_next):
     start = time.perf_counter()
 
     request.state.trace_id = trace_id
+    request.state.event_count = None
 
     try:
         response: Response = await call_next(request)
@@ -80,6 +96,7 @@ async def structured_logging_middleware(request: Request, call_next):
         method=request.method,
         status_code=response.status_code,
         latency_ms=latency_ms,
+        event_count=getattr(request.state, "event_count", None),
     )
     response.headers["X-Trace-Id"] = trace_id
     return response

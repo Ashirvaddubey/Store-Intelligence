@@ -6,17 +6,23 @@
 
 ## Quick Start (5 Commands)
 
-```bash
-git clone <repo-url> store-intelligence && cd store-intelligence
-cp .env.example .env
-docker compose up -d
-python pipeline/run.sh --clips-dir ./data/clips --store-id STORE_BLR_002
-open http://localhost:8000/docs   # Swagger UI
+```powershell
+git clone <repo-url> store-intelligence
+cd store-intelligence
+Copy-Item .env.example .env
+docker compose up -d --build
+Start-Process http://localhost:3000
 ```
 
 > **Dashboard**: http://localhost:3000  
 > **API Docs**: http://localhost:8000/docs  
 > **Health**: http://localhost:8000/health
+
+Then run the detection pipeline in a second terminal:
+
+```powershell
+bash pipeline/run.sh --clips-dir data/clips --layout data/store_layout.json --output-dir data/events --api-url http://localhost:8000
+```
 
 ---
 
@@ -61,6 +67,11 @@ bash pipeline/run.sh \
   --layout data/store_layout.json \
   --output-dir data/events \
   --api-url http://localhost:8000
+```
+
+### Windows PowerShell alternative
+```powershell
+bash pipeline/run.sh --clips-dir data/clips --layout data/store_layout.json --output-dir data/events --api-url http://localhost:8000
 ```
 
 ### Replay events into API (simulated real-time)
