@@ -27,6 +27,24 @@ async def websocket_feed(websocket: WebSocket, store_id: str):
     log.info("ws_client_connected", store_id=store_id)
 
     pubsub = await get_pubsub()
+
+    # If Redis is unavailable, just send heartbeat snapshots without pub/sub
+    if pubsub is None:
+        log.warning("ws_redis_unavailable_heartbeat_only", store_id=store_id)
+        try:
+            while True:
+                await asyncio.sleep(5)
+                metrics = await get_metrics(store_id)
+                if metrics:
+                    await websocket.send_json({"type": "metrics_snapshot", "data": metrics})
+                else:
+                    await websocket.send_json({"type": "metrics_snapshot", "data": {"store_id": store_id, "note": "no_data_yet"}})
+        except WebSocketDisconnect:
+            log.info("ws_client_disconnected", store_id=store_id)
+        except Exception as exc:
+            log.error("ws_error", store_id=store_id, error=str(exc))
+        return
+
     await pubsub.subscribe(f"store_events:{store_id}")
 
     try:
@@ -57,5 +75,6 @@ async def websocket_feed(websocket: WebSocket, store_id: str):
     except Exception as exc:
         log.error("ws_error", store_id=store_id, error=str(exc))
     finally:
-        await pubsub.unsubscribe(f"store_events:{store_id}")
+        if pubsub:
+            await pubsub.unsubscribe(f"store_events:{store_id}")
         await pubsub.aclose()

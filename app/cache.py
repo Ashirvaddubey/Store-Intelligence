@@ -22,8 +22,8 @@ async def init_cache() -> None:
         await _redis.ping()
         log.info("redis_connected", url=REDIS_URL)
     except Exception as exc:
-        log.error("redis_connection_failed", error=str(exc))
-        raise
+        log.warning("redis_unavailable_running_without_cache", error=str(exc))
+        _redis = None
 
 
 async def close_cache() -> None:
@@ -33,15 +33,15 @@ async def close_cache() -> None:
         log.info("redis_closed")
 
 
-def get_cache() -> aioredis.Redis:
-    if _redis is None:
-        raise RuntimeError("Redis not initialised")
-    return _redis
+def get_cache() -> Optional[aioredis.Redis]:
+    return _redis  # may be None when Redis is not available
 
 
 async def check_cache_health() -> bool:
     try:
         r = get_cache()
+        if r is None:
+            return False
         await r.ping()
         return True
     except Exception:
@@ -55,18 +55,24 @@ METRICS_TTL = 30  # seconds
 
 async def set_metrics(store_id: str, data: dict) -> None:
     r = get_cache()
+    if r is None:
+        return
     key = f"metrics:{store_id}"
     await r.setex(key, METRICS_TTL, json.dumps(data, default=str))
 
 
 async def get_metrics(store_id: str) -> Optional[dict]:
     r = get_cache()
+    if r is None:
+        return None
     raw = await r.get(f"metrics:{store_id}")
     return json.loads(raw) if raw else None
 
 
 async def invalidate_metrics(store_id: str) -> None:
     r = get_cache()
+    if r is None:
+        return
     await r.delete(f"metrics:{store_id}")
 
 
@@ -74,16 +80,22 @@ async def invalidate_metrics(store_id: str) -> None:
 
 async def update_last_event_time(store_id: str, ts: str) -> None:
     r = get_cache()
+    if r is None:
+        return
     await r.set(f"last_event:{store_id}", ts)
 
 
 async def get_last_event_time(store_id: str) -> Optional[str]:
     r = get_cache()
+    if r is None:
+        return None
     return await r.get(f"last_event:{store_id}")
 
 
 async def get_all_store_ids() -> list[str]:
     r = get_cache()
+    if r is None:
+        return []
     keys = await r.keys("last_event:*")
     return [k.split(":", 1)[1] for k in keys]
 
@@ -92,10 +104,14 @@ async def get_all_store_ids() -> list[str]:
 
 async def publish_event(store_id: str, payload: dict) -> None:
     r = get_cache()
+    if r is None:
+        return
     channel = f"store_events:{store_id}"
     await r.publish(channel, json.dumps(payload, default=str))
 
 
-async def get_pubsub() -> aioredis.client.PubSub:
+async def get_pubsub() -> Optional[aioredis.client.PubSub]:
     r = get_cache()
+    if r is None:
+        return None
     return r.pubsub()
