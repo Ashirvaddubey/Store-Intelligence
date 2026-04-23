@@ -86,5 +86,7 @@ wss.on("connection", (browserWs, req) => {
 
 server.listen(PORT, () => {
   console.log(`Store Intelligence Dashboard running at http://localhost:${PORT}`);
-  console.log(`Open: http://localhost:${PORT}?store=STORE_BLR_002`);
+  console.log(`Live dashboard : http://localhost:${PORT}?store=STORE_BLR_002`);
+  console.log(`Demo dashboard : http://localhost:${PORT}/demo.html`);
+  console.log(`API docs (Swagger): http://localhost:8000/docs`);
 });

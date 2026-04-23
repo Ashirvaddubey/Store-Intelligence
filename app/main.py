@@ -48,11 +48,56 @@ async def lifespan(app: FastAPI):
     log.info("store_intelligence_api_stopped")
 
 
+_TAGS_METADATA = [
+    {
+        "name": "Events",
+        "description": (
+            "**Batch event ingestion** — accepts up to 500 CCTV-derived tracking events per request. "
+            "Idempotent by `event_id`; partial-success on malformed items."
+        ),
+    },
+    {
+        "name": "Stores",
+        "description": (
+            "**Store analytics** — real-time KPIs, conversion funnel, zone heatmap, and anomaly detection. "
+            "All endpoints exclude `is_staff=true` events and support a configurable `window_hours` lookback."
+        ),
+    },
+    {
+        "name": "WebSocket",
+        "description": (
+            "**Live feed** — connect to `ws://host/ws/{store_id}` to receive `metrics_snapshot` (every 30 s) "
+            "and `event` messages in real time."
+        ),
+    },
+    {
+        "name": "Health",
+        "description": (
+            "**Readiness probe** — DB + Redis connectivity check plus per-store feed-lag indicator. "
+            "Returns `STALE_FEED` if no events have arrived for > 10 minutes."
+        ),
+    },
+]
+
 app = FastAPI(
     title="Store Intelligence API",
-    description="Real-time retail analytics from CCTV event streams",
+    description=(
+        "## Apex Retail — Store Intelligence\n\n"
+        "Real-time retail analytics pipeline built on CCTV tracking events.\n\n"
+        "### Quick links\n"
+        "- **Live dashboard** (Docker): http://localhost:3000\n"
+        "- **Demo dashboard** (no backend): open `dashboard/public/demo.html` in a browser\n"
+        "- **API reference**: [docs/API.md](https://github.com/Ashirvaddubey/Store-Intelligence/blob/main/docs/API.md)\n\n"
+        "### Auth\n"
+        "No authentication required — all endpoints are open.\n\n"
+        "### Trace ID\n"
+        "Every response includes `X-Trace-Id` header for log correlation."
+    ),
     version="1.0.0",
+    openapi_tags=_TAGS_METADATA,
     lifespan=lifespan,
+    docs_url="/docs",
+    redoc_url="/redoc",
 )
 
 app.add_middleware(
@@ -107,3 +152,24 @@ app.include_router(events.router, prefix="/events", tags=["Events"])
 app.include_router(stores.router, prefix="/stores", tags=["Stores"])
 app.include_router(health.router, tags=["Health"])
 app.include_router(ws.router, tags=["WebSocket"])
+
+
+# ── Root landing page ─────────────────────────────────────────────────────────
+@app.get("/", include_in_schema=False)
+async def root():
+    """Human-friendly landing page listing all key URLs."""
+    return JSONResponse({
+        "service": "Store Intelligence API",
+        "version": "1.0.0",
+        "links": {
+            "swagger_ui":       "/docs",
+            "redoc":            "/redoc",
+            "openapi_json":     "/openapi.json",
+            "health":           "/health",
+            "sample_metrics":   "/stores/STORE_BLR_002/metrics",
+            "sample_funnel":    "/stores/STORE_BLR_002/funnel",
+            "sample_heatmap":   "/stores/STORE_BLR_002/heatmap",
+            "sample_anomalies": "/stores/STORE_BLR_002/anomalies",
+            "live_dashboard":   "http://localhost:3000",
+        },
+    })

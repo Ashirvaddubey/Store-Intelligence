@@ -4,6 +4,19 @@
 
 ---
 
+## 🚀 Quick Links
+
+| Resource | URL |
+|----------|-----|
+| 🔴 **Live Dashboard** (Docker) | http://localhost:3000 |
+| 🟡 **Demo Dashboard** (no backend) | Open `dashboard/public/demo.html` in browser |
+| 📖 **Swagger UI (API Docs)** | http://localhost:8000/docs |
+| 📄 **ReDoc (API Docs)** | http://localhost:8000/redoc |
+| 🏥 **Health Check** | http://localhost:8000/health |
+| 📘 **Full API Reference** | [docs/API.md](docs/API.md) |
+
+---
+
 ## Quick Start (5 Commands)
 
 ```powershell
@@ -14,8 +27,10 @@ docker compose up -d --build
 Start-Process http://localhost:3000
 ```
 
-> **Dashboard**: http://localhost:3000  
-> **API Docs**: http://localhost:8000/docs  
+> **Live Dashboard**: http://localhost:3000  
+> **Demo Dashboard** (no backend needed): open `dashboard/public/demo.html` in any browser  
+> **API Docs (Swagger)**: http://localhost:8000/docs  
+> **API Docs (ReDoc)**: http://localhost:8000/redoc  
 > **Health**: http://localhost:8000/health
 
 Then run the detection pipeline in a second terminal:
